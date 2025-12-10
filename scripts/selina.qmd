@@ -1,0 +1,107 @@
+---
+execute:
+  cache: true
+---
+# General comments
+
+- requirements.txt not filled out
+- README missing explaining the repo structure and the code files
+- Maybe separate the scripts into subfolders to make it a bit clearer. E.,g. 01_run_model, 02_process_results, 03_make_figures or something
+- Remove all unused code and files
+- Add a header to each script where you briefly state the purpose of the script and what it does. What is input, what is output, which figure is generated etc.
+
+
+```{r}
+library(tidyverse)
+
+static_data <- read_csv("data/community/static/data.csv")
+
+```
+
+
+# 04_data_processing.py
+
+- auskommentierten code raus
+- Why do you need to save subsets in subfolders when data.csv contains everything? Do you ever use the filtered subset files again? If not, I would remove them because they are unused duplicate data with a complex folder structure.
+
+# 05_figure_all_datapoints.py
+
+Produces figures like this:
+
+![](../figures/all_datapoints/violin_volume_withPFT.png)
+
+- shows only non-seedlings (age > 10 day)
+
+## Figure content
+
+- df_temp used for some plots where you remove data with AG/BG ratios > 3 -> this is not ok I think, you should show all data points or you need to specify this in the paper
+
+- What these violin plots show is the same plant (`plant`) in 10 repetitions (`n`) for 
+multiple time points (`time`):
+
+```{r}
+static_data |> pull(n) |> unique()
+static_data |> count(plant, n, name = "count")
+```
+
+Does this make sense? I am not sure if we should lump all of this together. This is a lot of repeated data points. Below, you see how many data points we have over time in each repetition:
+
+```{r}
+#| label: figure-vol-time
+#| fig-cap: "Volume over time with mean and standard error of the mean bands. Each point is the mean measured volume over all plants at time point t."
+static_data |>
+  ggplot(aes(x = time, y = volume)) +
+  stat_summary(
+    geom = "ribbon",
+    fun.data = mean_se,
+    fun.args = list(mult = 1),
+    alpha = 0.3
+  ) +
+  stat_summary(geom = "line", fun = "mean") +
+  stat_summary(geom = "point", fun = "mean") +
+  facet_wrap(~n)
+```
+
+## Code comments
+- The `scale` parameter has been renamed and will be removed in v0.15.0. Pass `density_norm='width'` for the same effect. -> Fix it in `sns.violinplot`
+
+# 05_figure_box_median_by_replicate_static.py
+
+Produces figures like this:
+
+![](../figures/box_median_by_replicate_static/box_median_volume_by_replicate_static.png)
+
+- shows only non-seedlings (age > 10 day)
+
+
+## Figure content
+
+Ausgangsdaten:
+
+- 1 data point per plant and time and repetition
+
+Summarizing steps (all separate for pft and salinity):
+
+- `total_volume`: The median total biovolume across all timesteps in one replicate
+  - Sum up total volume per time step and repetition
+  - Take median total volume over all time steps
+- `volume_per_plant`: The median of the median plant sizes across all timesteps in one replicate
+  - Median volume per plant and time step
+  - median of this over all time steps
+- `h_ag` and `ag_bg_ratio`: The median of the median plant heights across all timesteps in one replicate
+  - median plant height per time step
+  - median over all time steps
+- `num_plants`: The median population size across all timesteps in one replicate
+  - count per time step
+  - median over all time steps
+
+| Metric | Step 1: Per Timestep | Step 2: Per Replicate | One Data Point Represents |
+|--------|---------------------|----------------------|---------------------------|
+| **total_volume** | SUM all plant volumes | MEDIAN over all timesteps | Typical total community biomass in one replicate |
+| **volume_per_plant** | MEDIAN plant volume | MEDIAN over all timesteps | Typical size of a typical plant in one replicate |
+| **h_ag** | MEDIAN plant height | MEDIAN over all timesteps | Typical height of a typical plant in one replicate |
+| **ag_bg_ratio** | MEDIAN AG/BG ratio | MEDIAN over all timesteps | Typical allocation strategy in one replicate |
+| **num_plants** | COUNT plants | MEDIAN over all timesteps | Typical population size in one replicate |
+
+
+## Code comment

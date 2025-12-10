@@ -125,7 +125,7 @@ sns.violinplot(
     dodge=True,
     linewidth=1.2,
     inner="quartile",
-    scale="width",
+    density_norm="width",
 )
 plt.title("All Datapoints $V_{BIO}$ per Plant")
 plt.xlabel("Scenario")
