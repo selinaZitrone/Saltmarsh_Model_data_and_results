@@ -1,0 +1,62 @@
+# ============================================
+# Python-spezifische Ausschlüsse
+# ============================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Cython build artifacts
+*.c
+*.cpp
+*.so
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.env/
+.venv/
+env/
+venv/
+ENV/
+Pipfile.lock
+poetry.lock
+
+# IDEs / Editor-Dateien
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS-spezifische Dateien
+.DS_Store
+Thumbs.db
+
+# Log-, Backup- und temporäre Dateien
+*.log
+*.bak
+*.tmp
+*.swp
+
+# ============================================
+# Benutzerdefinierte Ausschlüsse
+# ============================================
+
+# Ignoriere spezifisches Skript
+scripts/figures_mono_com.py
+
+# Ignoriere Ordner fig/bu und fig/bu_2
+fig/bu/
+fig/bu_2/
+
+# Ignoriere alle Frames im Video-Frame-Ordner
+fig/videos/frames/
+
+data_raw/
