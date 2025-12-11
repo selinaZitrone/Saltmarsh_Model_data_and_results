@@ -15,6 +15,7 @@ execute:
 library(tidyverse)
 
 static_data <- read_csv("data/community/static/data.csv")
+dynamic_data <- read_csv("data/community/dynamic/data.csv")
 
 ```
 
@@ -28,7 +29,11 @@ static_data <- read_csv("data/community/static/data.csv")
 
 Produces figures like this:
 
-![](../figures/all_datapoints/violin_volume_withPFT.png)
+```{r}
+knitr::include_graphics(here::here(
+  "figures/all_datapoints/violin_volume_withPFT.png"
+))
+```
 
 - shows only non-seedlings (age > 10 day)
 
@@ -105,3 +110,40 @@ Summarizing steps (all separate for pft and salinity):
 
 
 ## Code comment
+
+
+```{r}
+static_data |>
+  summarize(
+    volume = sum(volume, na.rm = TRUE),
+    .by = c(pft, salinity, n, time)
+  ) |>
+  summarize(
+    volume = median(volume, na.rm = TRUE),
+    .by = c(pft, salinity, n)
+  ) |>
+  ggplot(aes(x = salinity, y = volume, color = factor(pft))) +
+  geom_boxplot(position = position_dodge(width = 10), outlier.shape = NA) +
+  geom_point(
+    position = position_jitterdodge(dodge.width = 10, jitter.width = 10)
+  )
+stat_summary(size = 2, position = position_dodge(width = 10))
+
+```
+
+
+```{r}
+dynamic_data |>
+  filter(salinity == 35, version == "35_V1") |>
+  summarize(
+    total_volume = sum(volume, na.rm = TRUE),
+    .by = c(n, time, pft)
+  ) |>
+  mutate(
+    id = paste0(n, "_", pft)
+  ) |>
+  ggplot(aes(x = time, y = total_volume, color = factor(pft))) +
+  geom_line(aes(group = id), alpha = 0.3) +
+  stat_summary(geom = "line", fun = "mean", size = 2) +
+  theme_bw()
+```
